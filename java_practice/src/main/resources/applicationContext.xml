@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd"
+>
+    <!--可以省略· -->
+    <!--<context:annotation-config></context:annotation-config>-->
+
+    <!-- 注解驱动:
+		作用:替我们自动配置最新版的注解的处理器映射器和处理器适配器
+	 -->
+    <!-- 如果没有显示的配置处理器映射器和处理器适配那么springMvc会去默认的dispatcherServlet.properties中查找,
+        对应的处理器映射器和处理器适配器去使用,这样每个请求都要扫描一次他的默认配置文件,效率非常低,会降低访问速度,所以要显示的配置处理器映射器和
+        处理器适配器 -->
+    <mvc:annotation-driven/>
+
+    <context:component-scan base-package="com.es"></context:component-scan>
+
+    <!--
+       2:静态资源默认servlet配置
+       1:加入对静态资源的处理:js,gif,png
+       2:允许使用"/"做整体映射
+    -->
+    <mvc:default-servlet-handler/>
+
+    <!--这里配合springApplicationContext注入xml文件，加载setApplicationContext方法-->
+    <bean class="com.es.SpringApplicationContext"></bean>
+
+    <!-- 异常处理器 -->
+    <bean id="handlerExceptionResolver" class="com.es.CustomExceptionResolver"/>
+
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+        <mvc:mapping path="/**"/>
+        <bean class="com.es.Interceptor.FileUploadInterceptor">
+            <property name="maxSize" value="10485760"/>
+        </bean>
+    </mvc:interceptor>
+    </mvc:interceptors>
+
+
+    <!-- 配置视图解析器
+	作用:在controller中指定页面路径的时候就不用写页面的完整路径名称了,可以直接写页面去掉扩展名的名称
+	-->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <!-- 真正的页面路径 =  前缀 + 去掉后缀名的页面名称 + 后缀 -->
+        <!-- 前缀 -->
+        <!--<property name="prefix" value="/WEB-INF/jsp/"></property>-->
+        <!-- 后缀 -->
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+
+    <!--不要让这个CommonsMultipartResolver抛出文件大小异常，让interceptor来抛出异常，抛给前端控制器，再抛给异常处理器-->
+    <!-- 多部分文件上传 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 最大上传大小,不能超过40M  @see #FileUploadInterceptor -->
+        <!--<property name="maxUploadSize" value="10485760"/>-->
+        <property name="maxInMemorySize" value="4096"/>
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+</beans>

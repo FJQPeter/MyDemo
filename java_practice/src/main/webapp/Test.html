@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title>测试ajax跨域访问</title>
+</head>
+<body>
+<script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript">
+    $.ajax({
+        type:"GET",
+        url:"http://localhost:80/server3",
+        success:function (data) {
+            alert("成功啦");
+        },
+        error:function () {
+            alert("失败啦");
+        }
+    })
+</script>
+</body>
+</html>
