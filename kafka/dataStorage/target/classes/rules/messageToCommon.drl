@@ -1,0 +1,220 @@
+package com.instant.datastorage.drools
+
+import com.instant.datastorage.entity.KafkaMessage
+import java.util.Map
+import java.util.HashMap
+import com.instant.datastorage.util.DateValueFormat
+import com.instant.datastorage.queue.CommonDataQueue
+import com.instant.datastorage.store.redis.RedisPoolClient
+import com.instant.datastorage.util.LogUtil
+
+rule "msg to es shortTermGrid"
+    when
+        KafkaMessage(topic == "shortTermGrid", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        if(map.get("forecastName") != null){
+            String key = map.get("forecastName") + "_" + map.get("forecastModel");
+            String startTime = map.get("startTime").toString();
+            String lastTime = RedisPoolClient.getHash(key,"startTime");
+            LogUtil.info("topic[shortTermGrid]:"+map+" [key:"+key+", value:"+startTime+", lastValue:"+lastTime+"]");
+            if(lastTime == null || lastTime.length() == 0 || DateValueFormat.compareTime(startTime,lastTime) > 0){
+                CommonDataQueue.pushRedisData(key,"startTime",startTime);
+            }
+        }else{
+            //添加location字段值
+            Map<String,Object> locationMap = new HashMap();
+            locationMap.put("lat",map.get("latitude"));
+            locationMap.put("lon",map.get("longitude"));
+            map.put("location",locationMap);
+
+            String[] dateFields = new String[]{"startTime","forecastTime"};
+            for(String dateFiled : dateFields){
+                map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+            }
+            String id = map.get("startTime")+"_"+map.get("forecastTime")+"_"+map.get("longitude")+"_"+map.get("latitude")+"_"+map.get("forecastModel");
+            CommonDataQueue.pushEsData("grid_sterm","shortTermGrid",id,map);
+        }
+end
+
+
+rule "msg to es shortTimeGridModify"
+    when
+        KafkaMessage(topic == "shortTimeGridModify", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        if(map.get("forecastName") != null){
+            String key = map.get("forecastName") + "_" + map.get("forecastModel");
+            String value = map.get("startTime").toString();
+            String lastValue = RedisPoolClient.getHash(key,"startTime");
+            LogUtil.info("topic[shortTimeGridModify]:"+map+" [key:"+key+", startTime:"+value+", lastTime:"+lastValue+"]");
+            if(lastValue == null || lastValue.length() == 0 || DateValueFormat.compareTime(value,lastValue) > 0){
+                CommonDataQueue.pushRedisData(key,"startTime",value);
+            }
+        }else{
+            //添加location字段值
+            Map<String,Object> locationMap = new HashMap();
+            locationMap.put("lat",map.get("latitude"));
+            locationMap.put("lon",map.get("longitude"));
+            map.put("location",locationMap);
+
+            String[] dateFields = new String[]{"startTime","forecastTime"};
+            for(String dateFiled : dateFields){
+                map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+            }
+            String id = map.get("startTime")+"_"+map.get("forecastTime")+"_"+map.get("longitude")+"_"+map.get("latitude")+"_"+map.get("forecastModel");
+            CommonDataQueue.pushEsData("grid_modify","shortTimeGridModify",id,map);
+        }
+end
+
+rule "msg to es longerTermGrid"
+    when
+        KafkaMessage(topic == "longerTermGrid", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        if(map.get("forecastName") != null){
+            String key = map.get("forecastName") + "_" + map.get("forecastModel");
+            String value = map.get("startTime").toString();
+            String lastValue = RedisPoolClient.getHash(key,"startTime");
+            LogUtil.info("topic[longerTermGrid]:"+map+" [key:"+key+", startTime:"+value+", lastTime:"+lastValue+"]");
+            if(lastValue == null || lastValue.length() == 0 || DateValueFormat.compareTime(value,lastValue) > 0){
+                CommonDataQueue.pushRedisData(key,"startTime",value);
+            }
+        }else{
+            //添加location字段值
+            Map<String,Object> locationMap = new HashMap();
+            locationMap.put("lat",map.get("latitude"));
+            locationMap.put("lon",map.get("longitude"));
+            map.put("location",locationMap);
+
+            String[] dateFields = new String[]{"startTime","forecastTime"};
+            for(String dateFiled : dateFields){
+                map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+            }
+            String id = map.get("startTime")+"_"+map.get("forecastTime")+"_"+map.get("longitude")+"_"+map.get("latitude")+"_"+map.get("forecastModel");
+            CommonDataQueue.pushEsData("grid_smiddle","longerTermGrid",id,map);
+        }
+end
+
+rule "msg to es shortTimeGrid"
+    when
+        KafkaMessage(topic == "shortTimeGrid", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        if(map.get("forecastName") != null){
+            String key = map.get("forecastName") + "_" + map.get("forecastModel");
+            String value = map.get("startTime").toString();
+            String lastValue = RedisPoolClient.getHash(key,"startTime");
+            LogUtil.info("topic[shortTimeGrid]:"+map+" [key:"+key+", startTime:"+value+", lastTime:"+lastValue+"]");
+            if(lastValue == null || lastValue.length() == 0 || DateValueFormat.compareTime(value,lastValue) > 0){
+                CommonDataQueue.pushRedisData(key,"startTime",value);
+            }
+        }else{
+            //添加location字段值
+            Map<String,Object> locationMap = new HashMap();
+            locationMap.put("lat",map.get("latitude"));
+            locationMap.put("lon",map.get("longitude"));
+            map.put("location",locationMap);
+
+            String[] dateFields = new String[]{"startTime","forecastTime"};
+            for(String dateFiled : dateFields){
+                map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+            }
+            String id = map.get("startTime")+"_"+map.get("forecastTime")+"_"+map.get("longitude")+"_"+map.get("latitude")+"_"+map.get("forecastModel");
+            CommonDataQueue.pushEsData("grid_stime","shortTimeGrid",id,map);
+        }
+end
+
+rule "msg to es shortTimeStation"
+    when
+        KafkaMessage(topic == "shortTimeStation", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        if(map.get("forecastName") != null){
+            String key = map.get("forecastName") + "_" + map.get("forecastModel");
+            String value = map.get("startTime").toString();
+            String lastValue = RedisPoolClient.getHash(key,"startTime");
+            LogUtil.info("topic[shortTimeStation]:"+map+" [key:"+key+", startTime:"+value+", lastTime:"+lastValue+"]");
+            if(lastValue == null || lastValue.length() == 0 || DateValueFormat.compareTime(value,lastValue) > 0){
+                CommonDataQueue.pushRedisData(key,"startTime",value);
+            }
+        }else{
+            //添加location字段值
+            Map<String,Object> locationMap = new HashMap();
+            locationMap.put("lat",map.get("latitude"));
+            locationMap.put("lon",map.get("longitude"));
+            map.put("location",locationMap);
+
+            String[] dateFields = new String[]{"startTime","forecastTime"};
+            for(String dateFiled : dateFields){
+                map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+            }
+            String id = map.get("startTime")+"_"+map.get("forecastTime")+"_"+map.get("longitude")+"_"+map.get("latitude")+"_"+map.get("forecastModel");
+            CommonDataQueue.pushEsData("qxt_base","shortTimeStation",id,map);
+        }
+end
+
+rule "msg to es shortTermStation"
+    when
+        KafkaMessage(topic == "shortTermStation", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        if(map.get("forecastName") != null){
+            String key = map.get("forecastName") + "_" + map.get("forecastModel");
+            String value = map.get("startTime").toString();
+            String lastValue = RedisPoolClient.getHash(key,"startTime");
+            LogUtil.info("topic[shortTermStation]:"+map+" [key:"+key+", startTime:"+value+", lastTime:"+lastValue+"]");
+            if(lastValue == null || lastValue.length() == 0 || DateValueFormat.compareTime(value,lastValue) > 0){
+                CommonDataQueue.pushRedisData(key,"startTime",value);
+            }
+        }else{
+            //添加location字段值
+            Map<String,Object> locationMap = new HashMap();
+            locationMap.put("lat",map.get("latitude"));
+            locationMap.put("lon",map.get("longitude"));
+            map.put("location",locationMap);
+
+            String[] dateFields = new String[]{"startTime","forecastTime"};
+            for(String dateFiled : dateFields){
+                map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+            }
+            String id = map.get("startTime")+"_"+map.get("forecastTime")+"_"+map.get("longitude")+"_"+map.get("latitude")+"_"+map.get("forecastModel");
+            CommonDataQueue.pushEsData("qxt_base","shortTermStation",id,map);
+        }
+end
+
+rule "msg to es longerTermStation"
+    when
+        KafkaMessage(topic == "longerTermStation", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        if(map.get("forecastName") != null){
+            String key = map.get("forecastName") + "_" + map.get("forecastModel");
+            String value = map.get("startTime").toString();
+            String lastValue = RedisPoolClient.getHash(key,"startTime");
+            LogUtil.info("topic[longerTermStation]:"+map+" [key:"+key+", startTime:"+value+", lastTime:"+lastValue+"]");
+            if(lastValue == null || lastValue.length() == 0 || DateValueFormat.compareTime(value,lastValue) > 0){
+                CommonDataQueue.pushRedisData(key,"startTime",value);
+            }
+        }else{
+            //添加location字段值
+            Map<String,Object> locationMap = new HashMap();
+            locationMap.put("lat",map.get("latitude"));
+            locationMap.put("lon",map.get("longitude"));
+            map.put("location",locationMap);
+
+            String[] dateFields = new String[]{"startTime","forecastTime"};
+            for(String dateFiled : dateFields){
+                map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+            }
+            String id = map.get("startTime")+"_"+map.get("forecastTime")+"_"+map.get("longitude")+"_"+map.get("latitude")+"_"+map.get("forecastModel");
+            CommonDataQueue.pushEsData("qxt_base","longerTermStation",id,map);
+        }
+end

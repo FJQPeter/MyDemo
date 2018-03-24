@@ -1,0 +1,56 @@
+package com.instant.datastorage.drools
+
+import com.instant.datastorage.entity.KafkaMessage
+import java.util.Map
+import java.util.HashMap
+import com.instant.datastorage.queue.MsgForMysqlQueue
+import com.instant.datastorage.util.DateValueFormat
+import com.instant.datastorage.entity.MysqlField
+
+rule "msg to mysql loginLog"
+    when
+        KafkaMessage(topic == "loginLog", $msgMap:data, $msgStr:content)
+    then
+        Map<String,MysqlField> map = new HashMap<String,MysqlField>();
+    	map.put("id",new MysqlField("id",$msgMap.get("id"),"STRING"));
+    	map.put("username",new MysqlField("username",$msgMap.get("username"),"STRING"));
+    	map.put("wei_openid",new MysqlField("wei_openid",$msgMap.get("wei_openid"),"STRING"));
+    	map.put("login_time",new MysqlField("login_time",DateValueFormat.formatDate($msgMap.get("login_time")),"DATE"));
+    	map.put("type",new MysqlField("type",$msgMap.get("type"),"NUMBER"));
+        MsgForMysqlQueue.pushMsg("login_log_info",map);
+end
+
+rule "msg to mysql registLog"
+	when 
+		KafkaMessage(topic == "registLog", $msgMap:data, $msgStr:content)
+	then
+	    Map<String,MysqlField> map = new HashMap<String,MysqlField>();
+    	map.put("id",new MysqlField("id",$msgMap.get("id"),"STRING"));
+    	map.put("name",new MysqlField("name",$msgMap.get("name"),"STRING"));
+    	map.put("username",new MysqlField("username",$msgMap.get("username"),"STRING"));
+    	map.put("wei_openid",new MysqlField("wei_openid",$msgMap.get("wei_openid"),"STRING"));
+    	map.put("regist_time",new MysqlField("regist_time",DateValueFormat.formatDate($msgMap.get("regist_time")),"DATE"));
+    	map.put("type",new MysqlField("type",$msgMap.get("type"),"NUMBER"));
+		MsgForMysqlQueue.pushMsg("regist_log_info",map);
+end
+
+rule "msg to mysql attentionLog"
+	when
+		KafkaMessage(topic == "attentionLog", $msgMap:data, $msgStr:content)
+	then
+	    Map<String,MysqlField> map = new HashMap<String,MysqlField>();
+	    map.put("eb_id",new MysqlField("eb_id",$msgMap.get("eb_id"),"NUMBER"));
+	    map.put("ebq_id",new MysqlField("ebq_id",$msgMap.get("ebq_id"),"NUMBER"));
+	    map.put("wei_openid",new MysqlField("wei_openid",$msgMap.get("wei_openid"),"STRING"));
+	    map.put("nickname",new MysqlField("nickname",$msgMap.get("nickname"),"STRING"));
+	    map.put("sex",new MysqlField("sex",$msgMap.get("sex"),"NUMBER"));
+	    map.put("city",new MysqlField("city",$msgMap.get("city"),"STRING"));
+	    map.put("country",new MysqlField("country",$msgMap.get("country"),"STRING"));
+	    map.put("province",new MysqlField("province",$msgMap.get("province"),"STRING"));
+	    map.put("language",new MysqlField("language",$msgMap.get("language"),"STRING"));
+	    map.put("headimgurl",new MysqlField("headimgurl",$msgMap.get("headimgurl"),"STRING"));
+	    map.put("attention_time", new MysqlField("attention_time",DateValueFormat.formatDate($msgMap.get("attention_time")),"DATE"));
+	    map.put("type",new MysqlField("type",$msgMap.get("type"),"NUMBER"));
+		MsgForMysqlQueue.pushMsg("attention_log_info",map);
+end
+	

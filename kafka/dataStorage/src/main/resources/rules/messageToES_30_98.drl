@@ -1,0 +1,127 @@
+package com.instant.datastorage.drools
+
+import com.instant.datastorage.entity.KafkaMessage
+import java.util.Map
+import java.util.HashMap
+import com.instant.datastorage.queue.MsgForESQueue
+import com.instant.datastorage.util.DateValueFormat
+
+rule "msg to es afiletopic"
+    when
+        KafkaMessage(topic == "afiletopic", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        //添加location字段值
+        Map<String,Object> locationMap = new HashMap();
+        locationMap.put("lat",map.get("latitude"));
+        locationMap.put("lon",map.get("longitude"));
+        map.put("location",locationMap);
+        map.put("monitorTime",DateValueFormat.formatTimeToString(map.get("monitorTime")));
+        String id = map.get("monitorTime")+"_"+map.get("stationNo")+"_"+map.get("longitude")+"_"+map.get("latitude");
+        MsgForESQueue.pushMsg("a_file","afiletopic",id,map);
+end
+
+rule "msg to es dayafiletopic"
+    when
+        KafkaMessage(topic == "dayafiletopic", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        //添加location字段值
+        Map<String,Object> locationMap = new HashMap();
+        locationMap.put("lat",map.get("latitude"));
+        locationMap.put("lon",map.get("longitude"));
+        map.put("location",locationMap);
+        String[] dateFields = new String[]{"monitorTime","stationPressureMaxTime","stationPressureMinTime","tempMaxTime",
+        "tempMinTime","humidityMinTime","windMaxTime","windExMaxTime","shallowGeothermalMaxTime","shallowGeothermalMinTime",
+        "grassSurfaceTempMaxTime","grassSurfaceTempMinTime","visibilityMinTime"};
+        for(String dateField : dateFields){
+            map.put(dateField,DateValueFormat.formatTimeToString(map.get(dateField)));
+        }
+
+        String id = map.get("monitorTime")+"_"+map.get("stationNo")+"_"+map.get("longitude")+"_"+map.get("latitude");
+        MsgForESQueue.pushMsg("a_file","dayafiletopic",id,map);
+end
+
+rule "msg to es yfiletopic"
+    when
+        KafkaMessage(topic == "yfiletopic", $msgMap:data, $msgStr:content)
+    then
+        //System.out.println("yfiletopic:"+$msgStr);
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        //添加location字段值
+        Map<String,Object> locationMap = new HashMap();
+        locationMap.put("lat",map.get("latitude"));
+        locationMap.put("lon",map.get("longitude"));
+        map.put("location",locationMap);
+        String[] dateFields = new String[]{"monitorTime","maxSnowDeepDay","rainMaxAmountStartDay","waterAvgMinDay",
+        "rainMaxAmountEndDay","frozenSoilDepthMaxDay","rainZeroEndDay","speedExMaxDay","pressureExMaxDay","grassTempExMaxDay",
+        "maxSnowPressDay","waterAvgMaxDay","speedAvgMaxDay","floorTempExMinDay","huimidityMinDay","rainZeroStartDay",
+        "grassTempExMinDay","floorTempExMaxDay","rainDayMaxDay","wireIcingEastWestDay","pressureExMinDay","tempExMinDay",
+        "wireIcingNorthSouthDay"};
+        for(String dateField : dateFields){
+            map.put(dateField,DateValueFormat.formatTimeToString(map.get(dateField)));
+        }
+        String id = map.get("monitorTime")+"_"+map.get("stationNo")+"_"+map.get("longitude")+"_"+map.get("latitude");
+        MsgForESQueue.pushMsg("y_file","yfiletopic",id,map);
+end
+
+rule "msg to es yearyfiletopic"
+    when
+        KafkaMessage(topic == "yearyfiletopic", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        //添加location字段值
+        Map<String,Object> locationMap = new HashMap();
+        locationMap.put("lat",map.get("latitude"));
+        locationMap.put("lon",map.get("longitude"));
+        map.put("location",locationMap);
+        String[] dateFields = new String[]{"monitorTime","rianMax10Time","tempLessZeroLastYearStartTime","rainMax15Time","rainMax30Time","rainMax120Time",
+                                            "freezeLastYearEndTime","grassTempLessZeroSartTime","rianMax20Time","accumulatedSnowLastYearEndTime",
+                                            "accumulatedSnowLastYearStartTime","rianMax540Time","rianMax240Time","rianMax180Time","frostLastYearStartTime",
+                                           "accumulatedSnowSartTime","rianMax45Time","floorTempLessZeroLastYearEndTime","thunderstormEndTime",
+                                           "rainMax720Time","grassTempLessZeroLastYearEndTime","frostSartTime","grassTempLessZeroLastYearStartTime",
+                                           "rainMax1440Time","snowLastYearEndTime","floorTempLessZeroSartTime","rainMax60Time","rianMax90Time",
+                                           "rainMax360Time","floorTempLessZeroLastYearStartTime","snowSartTime","frostLastYearEndTime",
+                                           "freezeSartTime","thunderstormStartTime","tempLessZeroSartTime","freezeLastYearStartTime",
+                                           "rainMax5Time","tempLessZeroLastYearEndTime","snowLastYearStartTime","maxSnowDeepDay",
+                                           "rainMaxAmountStartDay","waterAvgMinDay","wireIcingNSDay","rainMaxAmountEndDay","frozenSoilDepthMaxDay",
+                                           "rainZeroEndDay","speedExMaxDay","pressureExMaxDay","grassTempExMaxDay","maxSnowPressDay",
+                                           "waterAvgMaxDay","speedAvgMaxDay","floorTempExMinDay","huimidityMinDay",
+                                           "rainZeroStartDay","grassTempExMinDay","floorTempExMaxDay","rainDayMaxDay",
+                                           "pressureExMinDay","tempExMaxDay","wireIcingEWDay","tempExMinDay",
+                                           "SWDirectionAppearMonth","NNEDirectionAppearMonth","WNWEDirectionAppearMonth","NDirectionAppearMonth",
+                                           "ENEDirectionAppearMonth","SEDirectionAppearMonth","WDirectionAppearMonth","NWDirectionAppearMonth",
+                                           "ESEDirectionAppearMonth","EDirectionAppearMonth","SSWDirectionAppearMonth","NNWDirectionAppearMonth",
+                                           "SDirectionAppearMonth","NEDirectionAppearMonth","SSEDirectionAppearMonth","WSWDirectionAppearMonth"};
+        for(String dateField : dateFields){
+            map.put(dateField,DateValueFormat.formatTimeToString(map.get(dateField)));
+        }
+        String id = map.get("monitorTime")+"_"+map.get("stationNo")+"_"+map.get("longitude")+"_"+map.get("latitude");
+        MsgForESQueue.pushMsg("y_file","yearyfiletopic",id,map);
+end
+
+rule "msg to es autoStationModify"
+    when
+        KafkaMessage(topic == "autostationtopic", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        //添加location字段值
+        Map<String,Object> locationMap = new HashMap();
+        locationMap.put("lat",map.get("latitude"));
+        locationMap.put("lon",map.get("longitude"));
+        map.put("location",locationMap);
+        map.put("monitorTime",DateValueFormat.formatTimeToString(map.get("monitorTime")));
+        String id = map.get("monitorTime")+"_"+map.get("stationNo")+"_"+map.get("longitude")+"_"+map.get("latitude");
+        MsgForESQueue.pushMsg("auto_station_modify","autoStationModify",id,map);
+end
+
+
+
+
+
+

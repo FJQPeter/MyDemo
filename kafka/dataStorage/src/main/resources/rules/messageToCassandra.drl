@@ -1,0 +1,21 @@
+package com.instant.datastorage.drools
+
+import com.instant.datastorage.entity.KafkaMessage
+import java.util.Map
+import java.util.HashMap
+import com.instant.datastorage.queue.MsgForCassandraQueue
+import com.instant.datastorage.util.DateValueFormat
+
+rule "msg to cass timeLog"
+
+    when
+        KafkaMessage(topic == "timeLog", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+        String[] dateFields = new String[]{"startTime","forecastTime"};
+        for(String dateFiled : dateFields){
+            map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+        }
+        MsgForCassandraQueue.pushMsg("time_log",map);
+end

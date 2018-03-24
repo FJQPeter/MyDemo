@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings>
+    <mapping>
+        <database>elasticsearch</database>
+        <!-- ES库的tableName格式：index_type -->
+        <tableName>index_type</tableName>
+        <matchType>PARTLY_MATCH</matchType>
+        <fields>
+            <value>name:name</value>
+        </fields>
+    </mapping>
+    <mapping>
+        <database>cassandra</database>
+        <tableName>tableName</tableName>
+        <matchType>NO_MATCHING</matchType>
+    </mapping>
+</mappings>

@@ -1,0 +1,69 @@
+package com.instant.datastorage.drools
+
+import com.instant.datastorage.entity.KafkaMessage
+import java.util.Map
+import java.util.HashMap
+import com.instant.datastorage.queue.MsgForESQueue
+import com.instant.datastorage.util.DateValueFormat
+
+rule "msg to es timeLog"
+    when
+        KafkaMessage(topic == "timeLog", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+
+        String[] dateFields = new String[]{"startTime","forecastTime"};
+        for(String dateFiled : dateFields){
+            map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+        }
+        String id = map.get("startTime")+"_"+map.get("forecastTime")+"_"+map.get("forecastName");
+        MsgForESQueue.pushMsg("data_log","timeLog",id,map);
+end
+
+rule "msg to es requestLog"
+    when
+        KafkaMessage(topic == "requestLog", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+
+        String[] dateFields = new String[]{"reqTime"};
+        for(String dateFiled : dateFields){
+            map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+        }
+        String id = map.get("interfaceName")+"_"+map.get("reqTime");
+        MsgForESQueue.pushMsg("data_log","requestLog",id,map);
+end
+
+rule "msg to es radarPic"
+    when
+        KafkaMessage(topic == "radarPic", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+
+        String[] dateFields = new String[]{"startTime"};
+        for(String dateFiled : dateFields){
+            map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+        }
+        String id = map.get("fileName").toString();
+        MsgForESQueue.pushMsg("qxt_pic","radarPic",id,map);
+end
+
+rule "msg to es cloudPic"
+    when
+        KafkaMessage(topic == "cloudPic", $msgMap:data, $msgStr:content)
+    then
+        Map<String,Object> map = new HashMap();
+        map.putAll($msgMap);
+
+        String[] dateFields = new String[]{"startTime"};
+        for(String dateFiled : dateFields){
+            map.put(dateFiled,DateValueFormat.formatTimeToString(map.get(dateFiled)));
+        }
+        String id = map.get("fileName").toString();
+        MsgForESQueue.pushMsg("qxt_pic","cloudPic",id,map);
+end
+
+
